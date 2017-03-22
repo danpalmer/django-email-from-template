@@ -74,6 +74,20 @@ within a "html" block::
     </a>
     {% endblock %}
 
+:mod:`django-email-from-template` also has the ability to only send the email
+when the current transaction commits. Pass ``on_commit=True`` to ``send_mail``
+to enable this functionality - for backwards compatability and predictability
+it is not enabled by default. Note that the rendering still occurs during the
+transaction, it is only the sending that is deferred::
+
+    from email_from_template import send_mail
+
+    send_mail([user.email], 'path/to/my_email.email', {
+        'user': user,
+        'num_posts': num_posts,
+    }, on_commit=True)
+
+
 Installation
 ------------
 
@@ -185,6 +199,7 @@ File a bug
   https://github.com/playfire/django-email-from-template/issues
 """
 
+from django.db import transaction
 from django.conf import settings
 from django.template import Context
 from django.core.mail import get_connection
@@ -194,7 +209,7 @@ from django.utils.module_loading import import_string
 
 from .app_settings import app_settings
 
-def send_mail(recipient_list, template, context=None, from_email=None, send_mail=True, *args, **kwargs):
+def send_mail(recipient_list, template, context=None, from_email=None, send_mail=True, on_commit=False, *args, **kwargs):
     """
     Wrapper around ``django.core.mail.send_mail`` that generates the subject
     and message body from a template.
@@ -272,7 +287,11 @@ def send_mail(recipient_list, template, context=None, from_email=None, send_mail
     if not send_mail:
         return mail
 
-    return mail.send()
+    if on_commit:
+        transaction.on_commit(mail.send)
+        return None
+    else:
+        return mail.send()
 
 def mail_admins(template, context=None, from_email=None, *args, **kwargs):
     if from_email is None:
