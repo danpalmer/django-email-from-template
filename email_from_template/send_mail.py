@@ -89,6 +89,13 @@ rolling back.::
         'num_posts': num_posts,
     }, on_commit=True)
 
+The return value of ``send_mail`` is, by default, the number of messages sent.
+When passed ``on_commit=True``, we cannot know the number of messages that send
+successfully until after the transaction commits, so we return ``None``. We
+don't return 0 as this could indicate an explicit error (which has not
+occurred), however care should be taken when checking this return code, to
+ensure that 0 is checked for explicitly, as ``None`` is falsy.
+
 
 Installation
 ------------
