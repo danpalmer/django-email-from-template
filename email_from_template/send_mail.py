@@ -292,8 +292,8 @@ def send_mail(recipient_list, template, context=None, from_email=None, send_mail
     if on_commit:
         transaction.on_commit(mail.send)
         return None
-    else:
-        return mail.send()
+
+    return mail.send()
 
 def mail_admins(template, context=None, from_email=None, *args, **kwargs):
     if from_email is None:
