@@ -78,7 +78,9 @@ within a "html" block::
 when the current transaction commits. Pass ``on_commit=True`` to ``send_mail``
 to enable this functionality - for backwards compatability and predictability
 it is not enabled by default. Note that the rendering still occurs during the
-transaction, it is only the sending that is deferred::
+transaction, it is only the sending that is deferred - this is desirable as it
+means that failing to render a template will still result in a transaction
+rolling back.::
 
     from email_from_template import send_mail
 
